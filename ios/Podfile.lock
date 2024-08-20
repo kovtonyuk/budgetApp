@@ -1517,6 +1517,8 @@ PODS:
     - React-utils (= 0.75.1)
   - RealmJS (12.13.0):
     - React
+  - RNCAsyncStorage (1.24.0):
+    - React-Core
   - RNGestureHandler (2.18.1):
     - DoubleConversion
     - glog
@@ -1719,6 +1721,7 @@ DEPENDENCIES:
   - ReactCodegen (from `build/generated/ios`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - RealmJS (from `../node_modules/realm`)
+  - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - "RNGoogleSignin (from `../node_modules/@react-native-google-signin/google-signin`)"
   - RNReanimated (from `../node_modules/react-native-reanimated`)
@@ -1864,6 +1867,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   RealmJS:
     :path: "../node_modules/realm"
+  RNCAsyncStorage:
+    :path: "../node_modules/@react-native-async-storage/async-storage"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
   RNGoogleSignin:
@@ -1946,6 +1951,7 @@ SPEC CHECKSUMS:
   ReactCodegen: e9156d86a166f3e10dc8fb6160764048df3528bc
   ReactCommon: 3ae48fa4cfa7052a270c2150ececfc94e541fb8a
   RealmJS: a8c77aa700951e22403015390b33135f7ad4ace9
+  RNCAsyncStorage: ec53e44dc3e75b44aa2a9f37618a49c3bc080a7a
   RNGestureHandler: 939f21fabf5d45a725c0bf175eb819dd25cf2e70
   RNGoogleSignin: 08dc4ba7eac2096c7fecfe109f0950fa4683c803
   RNReanimated: 74413c59c47123d7144db601d065627c75c746a3

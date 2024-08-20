@@ -20,6 +20,11 @@ const StackNavigator = () => {
       <Stack.Screen name="SignUp" component={SignUpScreen} />
       <Stack.Screen name="Transactions" component={TransactionsScreen} />
       <Stack.Screen name="SignIn" component={SignInScreen} />
+      <Stack.Screen 
+        name="Main" 
+        component={TabNavigator} 
+        options={{ headerShown: false }} // Приховати заголовок на головному екрані
+      />
     </Stack.Navigator>
   );
 };
@@ -28,6 +33,8 @@ const TabNavigator = () => {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
+        tabBarActiveTintColor: 'tomato',
+        tabBarInactiveTintColor: 'gray',
         tabBarIcon: ({ color, size }) => {
           let iconName;
           if (route.name === 'Transactions') {
@@ -35,7 +42,7 @@ const TabNavigator = () => {
           } else if (route.name === 'Profile') {
             iconName = 'people-circle-outline';
           } else if (route.name === 'Category') {
-            iconName = 'duplicate-outline';
+            iconName = 'copy-outline';
           } else if (route.name === 'Tag') {
             iconName = 'pricetag-outline';
           } else if (route.name === 'Settings') {
@@ -44,10 +51,6 @@ const TabNavigator = () => {
           return <Icon name={iconName} size={size} color={color} />;
         },
       })}
-      tabBarOptions={{
-        activeTintColor: 'tomato',
-        inactiveTintColor: 'gray',
-      }}
     >
       <Tab.Screen name="Transactions" component={TransactionsScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
-import { getUser } from '../../database'; // Імплементуйте правильний шлях
+// import { getUser } from '../../database'; // Імплементуйте правильний шлях
+import { getUser } from '../components/userStore'
 
 GoogleSignin.configure({
   webClientId: 'YOUR_WEB_CLIENT_ID', // Замініть на ваш webClientId з Google Cloud Console
@@ -11,8 +12,7 @@ GoogleSignin.configure({
 const SignInScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState(''); // Додано confirmPassword
-  const [errors, setErrors] = useState({}); // Використання errors замість error
+  const [errors, setErrors] = useState({});
 
   const handleGoogleSignIn = async () => {
     try {
@@ -37,7 +37,6 @@ const SignInScreen = ({ navigation }) => {
     let errorMessages = {
       email: '',
       password: '',
-      confirmPassword: '',
     };
     
     // Перевірка на формат електронної пошти
@@ -57,24 +56,44 @@ const SignInScreen = ({ navigation }) => {
     }
 
     if (valid) {
-      // Перевірка на існування користувача
       try {
-        const user = await getUser(email, password);
-        if (user) {
-          console.log('User found:', user);
-          // Перехід на наступний екран або інша дія після успішного входу
-          navigation.navigate('Transactions');
+        const users = await getUser();
+        const existingUser = users.find(user => user.email === email && user.password === password);
+        if (existingUser) {
+          // Успішна аутентифікація
+          alert('Sign in successful!');
+          navigation.navigate('Main'); // Перехід до основного екрану
         } else {
-          console.log('User not found');
           alert('Invalid email or password');
         }
       } catch (error) {
-        console.error('Error signing in:', error);
-        alert('Failed to sign in.');
+        console.error('Error handling sign in:', error);
+        alert('An error occurred while signing in.');
       }
     } else {
       setErrors(errorMessages);
     }
+
+    //код на валідацію і отримання користувача з БД
+    // if (valid) {
+    //   // Перевірка на існування користувача
+    //   try {
+    //     const user = await getUser(email, password);
+    //     if (user) {
+    //       console.log('User found:', user);
+    //       // Перехід на наступний екран або інша дія після успішного входу
+    //       navigation.navigate('Transactions');
+    //     } else {
+    //       console.log('User not found');
+    //       alert('Invalid email or password');
+    //     }
+    //   } catch (error) {
+    //     console.error('Error signing in:', error);
+    //     alert('Failed to sign in.');
+    //   }
+    // } else {
+    //   setErrors(errorMessages);
+    // }
   };
 
   return (
@@ -96,7 +115,8 @@ const SignInScreen = ({ navigation }) => {
         value={password}
         onChangeText={setPassword}
         secureTextEntry
-        autoComplete="off" // Вимкнення автозаповнення
+        autoComplete="off" // Для Android
+        textContentType="none" // Для iOS
       />
       {errors.password ? <Text style={styles.errorText}>{errors.password}</Text> : null}
       <TouchableOpacity onPress={() => navigation.navigate('SignIn')}>
@@ -126,13 +146,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: '400', // Змініть на числову вагу
+    fontWeight: '400',
     marginBottom: 16,
     textAlign: 'center',
   },
   subTitle: {
     fontSize: 14,
-    fontWeight: '400', // Змініть на числову вагу
+    fontWeight: '400',
     marginBottom: 16,
     textAlign: 'center',
   },
@@ -176,7 +196,7 @@ const styles = StyleSheet.create({
   googleText: {
     fontSize: 14,
     fontFamily: 'Manrope-Regular',
-    fontWeight: '400', // Змініть на числову вагу
+    fontWeight: '400',
     color: '#000',
   },
   link: {
