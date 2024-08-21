@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
-// import { addUser } from '../../database'; // Імплементуйте правильний шлях
-import { addUser, getUser } from '../components/userStore'
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { addUser, getUser } from '../components/userStore';
+import { nanoid } from 'nanoid';
 
 GoogleSignin.configure({
   webClientId: 'YOUR_WEB_CLIENT_ID', // Замініть на ваш webClientId з Google Cloud Console
   iosClientId: 'Y799177460164-op1nci6s5aihn0u2n62ttfikcutqktuj.apps.googleusercontent.com',
 });
-
-const users = [];
 
 const SignUpScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -27,20 +25,19 @@ const SignUpScreen = ({ navigation }) => {
       const userInfo = await GoogleSignin.signIn();
       console.log('Google sign-in successful', userInfo);
 
+      // Використовуйте idToken для авторизації в Firebase, якщо потрібно
       const googleCredential = auth.GoogleAuthProvider.credential(userInfo.idToken);
       const userCredential = await auth().signInWithCredential(googleCredential);
       const user = userCredential.user;
 
-      await addUser(user.email, ''); // Додайте інші дані користувача тут
-
+      await addUser({ id: nanoid(), email: user.email, password: '' }); // Додайте інші дані користувача тут
       navigation.navigate('ExpenseIncome');
     } catch (error) {
-      handleError(error);
+      console.error('Error handling Google sign up:', error);
     }
   };
 
-  const handleSignUp = async () => {
-    console.log('Sign up initiated');
+  const validateForm = () => {
     let valid = true;
     let errorMessages = { email: '', password: '', confirmPassword: '' };
   
@@ -68,31 +65,20 @@ const SignUpScreen = ({ navigation }) => {
       valid = false;
     }
   
-    //код на додавання користувача в БД
-    // if (valid) {
-    //   try {
-    //     console.log('Calling addUser with email:', email);
-    //     await addUser(email, password);
-    //     console.log('User added, navigating to Transactions');
-    //     navigation.navigate('Transactions');
-    //   } catch (error) {
-    //     console.error('Error signing up:', error);
-    //     alert('Failed to sign up.');
-    //   }
-    // } else {
-    //   setErrors(errorMessages);
-    // }
-    // };
+    setErrors(errorMessages);
+    return valid;
+  };
 
-    if (valid) {
+  const handleSignUp = async () => {
+    if (validateForm()) {
       try {
         const users = await getUser();
         const existingUser = users.find(user => user.email === email);
         if (existingUser) {
           alert('User already exists');
         } else {
-          await addUser({ email, password });
-          console.log(email, password);
+          await addUser({ id: nanoid(), email, password });
+          console.log({ id: nanoid(), email, password });
           alert('User registered successfully!');
           navigation.navigate('Main'); // Перехід на екран входу після успішної реєстрації
         }
@@ -100,8 +86,6 @@ const SignUpScreen = ({ navigation }) => {
         console.error('Error handling sign up:', error);
         alert('An error occurred while signing up.');
       }
-    } else {
-      setErrors(errorMessages);
     }
   };
 
@@ -124,8 +108,6 @@ const SignUpScreen = ({ navigation }) => {
         value={password}
         onChangeText={setPassword}
         secureTextEntry
-        autoComplete="off" // Для Android
-        textContentType="none" // Для iOS
       />
       {errors.password ? <Text style={styles.errorText}>{errors.password}</Text> : null}
       <TextInput
@@ -134,17 +116,13 @@ const SignUpScreen = ({ navigation }) => {
         value={confirmPassword}
         onChangeText={setConfirmPassword}
         secureTextEntry
-        autoComplete="off" // Для Android
-        textContentType="none" // Для iOS
       />
       {errors.confirmPassword ? <Text style={styles.errorText}>{errors.confirmPassword}</Text> : null}
       <TouchableOpacity style={styles.btn} onPress={handleSignUp}>
         <Text style={styles.btnText}>Sign Up</Text>
       </TouchableOpacity>
-      <TouchableOpacity 
-        style={styles.googleButton} onPress={handleGoogleSignUp}>
-          <Image source={require('../assets/img/google.png')} 
-            style={styles.googleIcon} />
+      <TouchableOpacity style={styles.googleButton} onPress={handleGoogleSignUp}>
+        <Image source={require('../assets/img/google.png')} style={styles.googleIcon} />
         <Text style={styles.googleText}>Sign up with Google</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={() => navigation.navigate('SignIn')}>
@@ -211,7 +189,6 @@ const styles = StyleSheet.create({
   },
   googleText: {
     fontSize: 14,
-    fontFamily: 'Manrope-Regular',
     color: '#000',
   },
   link: {

@@ -1,22 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { View, TextInput, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { updateUser } from '../components/userStore';
 
 const EditProfileScreen = ({ route, navigation }) => {
-  // Отримання параметрів навігації (можуть бути передані при переході з екрану профілю)
-  const { firstName: initialFirstName, lastName: initialLastName } = route.params || {};
+  const { id: initialId, firstName: initialFirstName, lastName: initialLastName, email: initialEmail } = route.params || {};
 
   const [firstName, setFirstName] = useState(initialFirstName || '');
   const [lastName, setLastName] = useState(initialLastName || '');
+  const [email, setEmail] = useState(initialEmail || '');
+  const [password, setPassword] = useState('');
 
   useEffect(() => {
-    // Оновлюємо стан, якщо параметри навігації змінюються
+    setEmail(initialEmail || '');
     setFirstName(initialFirstName || '');
     setLastName(initialLastName || '');
-  }, [initialFirstName, initialLastName]);
+  }, [initialEmail, initialFirstName, initialLastName]);
 
-  const handleSave = () => {
-    // Передаємо дані на екран профілю через параметри навігації
+  const handleSave = async () => {
+    const updatedUser = {
+      id: initialId,
+      firstName: firstName,
+      lastName: lastName,
+      email: email,
+      password: password || undefined, // Якщо пароль порожній, не оновлюємо його
+    };
+    
+    await updateUser(updatedUser);
+    console.log('User updated');
     navigation.navigate('Profile', {
+      email: email,
       firstName: firstName,
       lastName: lastName,
     });
@@ -24,6 +36,20 @@ const EditProfileScreen = ({ route, navigation }) => {
 
   return (
     <View style={styles.container}>
+      <TextInput
+        style={styles.input}
+        value={email}
+        onChangeText={setEmail}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Password"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+        autoComplete="off"
+        textContentType="none"
+      />
       <TextInput
         style={styles.input}
         placeholder="First Name"

@@ -1,9 +1,25 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { getUserEmail } from '../components/userStore';
 
 const ProfileScreen = ({ route, navigation }) => {
   // Отримання параметрів навігації
   const { firstName, lastName } = route.params || {};
+
+  const [email, setEmail] = useState('');
+
+  useEffect(() => {
+    const fetchEmail = async () => {
+      const storedEmail = await getUserEmail(email);
+      console.log(storedEmail);
+      if (storedEmail) {
+        setEmail(storedEmail);
+      } else {
+        console.log('Email not found');
+      }
+    };
+    fetchEmail();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -11,8 +27,9 @@ const ProfileScreen = ({ route, navigation }) => {
         <Image source={require('../assets/img/Avatar.png')} 
           style={styles.avatar} />
       </View>
-      <Text style={styles.text}>{firstName || 'Not provided'} {lastName || 'Not provided'}</Text>
-      <TouchableOpacity onPress={() => navigation.navigate('EditProfile', { firstName, lastName })} style={styles.btn}>
+      <Text style={styles.text}>{email || 'Not provided'}</Text>
+      <Text style={styles.text}>{firstName || ''} {lastName || ''}</Text>
+      <TouchableOpacity onPress={() => navigation.navigate('EditProfile', { firstName, lastName, email })} style={styles.btn}>
         <Image source={require('../assets/img/edit.png')} style={styles.icon} />
         <Text style={styles.btnText}>Edit</Text>
       </TouchableOpacity>
