@@ -80,7 +80,10 @@ To learn more about React Native, take a look at the following resources:
 
 
 # Run project
-- npx react-native
+- npx react-native start
+
+# Run project with clear cache
+- npx react-native start --reset-cache 
 
 # search server proccess
 - lsof -i :8081 or other port

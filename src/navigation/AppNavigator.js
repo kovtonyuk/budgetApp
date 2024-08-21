@@ -6,6 +6,7 @@ import SignInScreen from '../screens/SignInScreen';
 import SignUpScreen from '../screens/SignUpScreen';
 import TransactionsScreen from '../screens/TransactionsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import EditProfileScreen from '../screens/EditProfileScreen';
 import CategoryScreen from '../screens/CategoryScreen';
 import TagScreen from '../screens/TagScreen';
 import SettingsScreen from '../screens/SettingsScreen';
@@ -20,6 +21,7 @@ const StackNavigator = () => {
       <Stack.Screen name="SignUp" component={SignUpScreen} />
       <Stack.Screen name="Transactions" component={TransactionsScreen} />
       <Stack.Screen name="SignIn" component={SignInScreen} />
+      <Stack.Screen name="EditProfile" component={EditProfileScreen} />
       <Stack.Screen 
         name="Main" 
         component={TabNavigator} 
