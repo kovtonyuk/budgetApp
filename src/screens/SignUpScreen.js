@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import { addUser, getUser } from '../components/userStore';
-import { nanoid } from 'nanoid';
+import Icon from 'react-native-vector-icons/Ionicons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { addUser, getUser, saveUserId } from '../components/userStore';
 
+// Налаштування Google SignIn
 GoogleSignin.configure({
-  webClientId: 'YOUR_WEB_CLIENT_ID', // Замініть на ваш webClientId з Google Cloud Console
+  webClientId: 'YOUR_WEB_CLIENT_ID',
   iosClientId: 'Y799177460164-op1nci6s5aihn0u2n62ttfikcutqktuj.apps.googleusercontent.com',
 });
 
@@ -13,62 +15,82 @@ const SignUpScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [errors, setErrors] = useState({
-    email: '',
-    password: '',
-    confirmPassword: '',
-  });
+  const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  // Отримати останній ID користувача
+  const getLastUserId = async () => {
+    try {
+      const lastId = await AsyncStorage.getItem('lastUserId');
+      return lastId ? parseInt(lastId, 10) : 0;
+    } catch (error) {
+      console.error('Error getting last user ID:', error);
+      return 0;
+    }
+  };
+
+  // Встановити останній ID користувача
+  const setLastUserId = async (id) => {
+    try {
+      await AsyncStorage.setItem('lastUserId', id.toString());
+    } catch (error) {
+      console.error('Error setting last user ID:', error);
+    }
+  };
+
+  // Генерація нового ID користувача
+  const generateSequentialId = async () => {
+    const lastId = await getLastUserId();
+    const newId = lastId + 1;
+    await setLastUserId(newId);
+    return newId;
+  };
+
+  // Обробка реєстрації через Google
   const handleGoogleSignUp = async () => {
     try {
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
       console.log('Google sign-in successful', userInfo);
 
-      // Використовуйте idToken для авторизації в Firebase, якщо потрібно
       const googleCredential = auth.GoogleAuthProvider.credential(userInfo.idToken);
       const userCredential = await auth().signInWithCredential(googleCredential);
       const user = userCredential.user;
 
-      await addUser({ id: nanoid(), email: user.email, password: '' }); // Додайте інші дані користувача тут
+      const newId = await generateSequentialId();
+      await addUser({ id: newId, email: user.email, password: '' });
+      await saveUserId(newId);
       navigation.navigate('ExpenseIncome');
     } catch (error) {
       console.error('Error handling Google sign up:', error);
     }
   };
 
+  // Валідація форми
   const validateForm = () => {
-    let valid = true;
-    let errorMessages = { email: '', password: '', confirmPassword: '' };
-  
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const errors = {};
+
     if (!email.trim()) {
-      errorMessages.email = 'Email is required';
-      valid = false;
+      errors.email = 'Email is required';
     } else if (!emailRegex.test(email.trim())) {
-      errorMessages.email = 'Invalid email format';
-      valid = false;
+      errors.email = 'Invalid email format';
     }
-  
+
     if (!password) {
-      errorMessages.password = 'Password is required';
-      valid = false;
+      errors.password = 'Password is required';
+    } else if (password !== confirmPassword) {
+      errors.confirmPassword = 'Passwords do not match';
+    } else if (!confirmPassword) {
+      errors.confirmPassword = 'Please confirm your password';
     }
-  
-    if (password !== confirmPassword) {
-      errorMessages.confirmPassword = 'Passwords do not match';
-      valid = false;
-    }
-  
-    if (!confirmPassword) {
-      errorMessages.confirmPassword = 'Please confirm your password';
-      valid = false;
-    }
-  
-    setErrors(errorMessages);
-    return valid;
+
+    setErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
+  // Обробка реєстрації користувача
   const handleSignUp = async () => {
     if (validateForm()) {
       try {
@@ -77,10 +99,12 @@ const SignUpScreen = ({ navigation }) => {
         if (existingUser) {
           alert('User already exists');
         } else {
-          await addUser({ id: nanoid(), email, password });
-          console.log({ id: nanoid(), email, password });
+          const newId = await generateSequentialId();
+          const newUser = { id: newId, email, password };
+          await addUser(newUser);
+          await saveUserId(newId);
           alert('User registered successfully!');
-          navigation.navigate('Main'); // Перехід на екран входу після успішної реєстрації
+          navigation.navigate('Main');
         }
       } catch (error) {
         console.error('Error handling sign up:', error);
@@ -93,31 +117,60 @@ const SignUpScreen = ({ navigation }) => {
     <View style={styles.container}>
       <Text style={styles.title}>Get Started</Text>
       <Text style={styles.subTitle}>Create an account</Text>
-      <TextInput
-        style={[styles.input, errors.email && styles.errorInput]}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
-      {errors.email ? <Text style={styles.errorText}>{errors.email}</Text> : null}
-      <TextInput
-        style={[styles.input, errors.password && styles.errorInput]}
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-      {errors.password ? <Text style={styles.errorText}>{errors.password}</Text> : null}
-      <TextInput
-        style={[styles.input, errors.confirmPassword && styles.errorInput]}
-        placeholder="Confirm Password"
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-        secureTextEntry
-      />
-      {errors.confirmPassword ? <Text style={styles.errorText}>{errors.confirmPassword}</Text> : null}
+      <View style={styles.inputContainer}>
+        <Icon name='mail-outline' size={20} color='grey' style={styles.icon} />
+        <TextInput
+          style={[styles.input, errors.email && styles.errorInput]}
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+        />
+      </View>
+      {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+      <View style={styles.inputContainer}>
+        <Icon name='lock-closed-outline' size={20} color='grey' style={styles.icon} />
+        <TextInput
+          style={[styles.input, errors.password && styles.errorInput]}
+          placeholder="Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry={!showPassword}
+          autoComplete="off" // Для Android
+          textContentType="none" // Для iOS
+        />
+        <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+          <Icon
+            name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+            size={20}
+            color='grey'
+            style={styles.icon}
+          />
+        </TouchableOpacity>
+      </View>
+      {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
+      <View style={styles.inputContainer}>
+        <Icon name='lock-closed-outline' size={20} color='grey' style={styles.icon} />
+        <TextInput
+          style={[styles.input, errors.confirmPassword && styles.errorInput]}
+          placeholder="Confirm Password"
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          secureTextEntry={!showConfirmPassword}
+          autoComplete="off" // Для Android
+          textContentType="none" // Для iOS
+        />
+        <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+          <Icon
+            name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'}
+            size={20}
+            color='grey'
+            style={styles.icon}
+          />
+        </TouchableOpacity>
+      </View>
+      {errors.confirmPassword && <Text style={styles.errorText}>{errors.confirmPassword}</Text>}
       <TouchableOpacity style={styles.btn} onPress={handleSignUp}>
         <Text style={styles.btnText}>Sign Up</Text>
       </TouchableOpacity>
@@ -150,12 +203,21 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     textAlign: 'center',
   },
-  input: {
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 8,
-    marginBottom: 8,
+    borderColor: '#BDC1CA',
+    paddingHorizontal: 10,
     borderRadius: 10,
+    marginBottom: 12,
+  },
+  icon: {
+    marginRight: 10,
+  },
+  input: {
+    flex: 1,
+    paddingVertical: 8,
   },
   btn: {
     backgroundColor: '#6D31ED',
@@ -193,7 +255,7 @@ const styles = StyleSheet.create({
   },
   link: {
     marginTop: 14,
-    color: 'black',
+    color: '#6D31ED',
     textAlign: 'center',
   },
 });

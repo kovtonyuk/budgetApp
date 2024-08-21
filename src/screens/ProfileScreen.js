@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import { getUserEmail } from '../components/userStore';
+import { getUser, getUserId } from '../components/userStore';
+import { useFocusEffect } from '@react-navigation/native';
 
 const ProfileScreen = ({ route, navigation }) => {
   // Отримання параметрів навігації
@@ -8,18 +9,35 @@ const ProfileScreen = ({ route, navigation }) => {
 
   const [email, setEmail] = useState('');
 
-  useEffect(() => {
-    const fetchEmail = async () => {
-      const storedEmail = await getUserEmail(email);
-      console.log(storedEmail);
-      if (storedEmail) {
-        setEmail(storedEmail);
-      } else {
-        console.log('Email not found');
-      }
-    };
-    fetchEmail();
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchEmail = async () => {
+        const userId = await getUserId();
+        if (userId !== null) {
+          const users = await getUser();
+          const currentUser = users.find(user => user.id === userId);
+          if (currentUser) {
+            setEmail(currentUser.email);
+          }
+        }
+      };
+      fetchEmail();
+    }, [])
+  );
+
+  // useEffect(() => {
+  //   const fetchEmail = async () => {
+  //     const userId = await getUserId();
+  //     if (userId !== null) {
+  //       const users = await getUser();
+  //       const currentUser = users.find(user => user.id === userId);
+  //       if (currentUser) {
+  //         setEmail(currentUser.email);
+  //       }
+  //     }
+  //   };
+  //   fetchEmail();
+  // }, []);
 
   return (
     <View style={styles.container}>

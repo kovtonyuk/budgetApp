@@ -1,5 +1,4 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { nanoid } from 'nanoid';
 
 export const getUser = async () => {
   try {
@@ -11,12 +10,18 @@ export const getUser = async () => {
   }
 };
 
-export const updateUser = async (email, updates) => {
+export const updateUser = async (updatedUser) => {
   try {
     const users = await getUser();
     const updatedUsers = users.map(user => {
-      if (user.email === email) {
-        return { ...user, ...updates }; // Оновлюємо дані користувача
+      if (user.id === updatedUser.id) {
+        // Оновлюємо лише ті поля, які вказані
+        const updatedUserData = { ...user };
+        if (updatedUser.firstName !== undefined) updatedUserData.firstName = updatedUser.firstName;
+        if (updatedUser.lastName !== undefined) updatedUserData.lastName = updatedUser.lastName;
+        if (updatedUser.email !== undefined) updatedUserData.email = updatedUser.email;
+        if (updatedUser.password !== undefined && updatedUser.password !== '') updatedUserData.password = updatedUser.password;
+        return updatedUserData;
       }
       return user;
     });
@@ -30,7 +35,7 @@ export const updateUser = async (email, updates) => {
 export const addUser = async (user) => {
   try {
     const users = await getUser();
-    user.id = nanoid(); // Додаємо ID новому користувачу
+    // user.id = generateSequentialId; // Додаємо ID новому користувачу
     users.push(user);
     await AsyncStorage.setItem('users', JSON.stringify(users));
   } catch (error) {
@@ -49,5 +54,38 @@ export const authenticateUser = async (email, password) => {
     }
   } catch (error) {
     return Promise.reject(error);
+  }
+};
+
+export const getEmailById = async (id) => {
+  try {
+    const users = await getUser();
+    const user = users.find(user => user.id === id);
+    if (user) {
+      return user.email;
+    } else {
+      return null; // Повертає null, якщо користувача з таким ID не знайдено
+    }
+  } catch (error) {
+    console.error('Error fetching user by ID:', error);
+    return null;
+  }
+};
+
+export const saveUserId = async (userId) => {
+  try {
+    await AsyncStorage.setItem('userId', userId.toString());
+  } catch (error) {
+    console.error('Error saving logged in user ID:', error);
+  }
+};
+
+export const getUserId = async () => {
+  try {
+    const userId = await AsyncStorage.getItem('userId');
+    return userId ? parseInt(userId, 10) : null;
+  } catch (error) {
+    console.error('Error getting logged in user ID:', error);
+    return null;
   }
 };

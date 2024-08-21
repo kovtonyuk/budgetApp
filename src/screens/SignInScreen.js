@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
-// import { getUser } from '../../database'; // Імплементуйте правильний шлях
-import { getUser } from '../components/userStore'
+import { authenticateUser } from '../components/userStore'
 
 GoogleSignin.configure({
-  webClientId: 'YOUR_WEB_CLIENT_ID', // Замініть на ваш webClientId з Google Cloud Console
+  webClientId: 'YOUR_WEB_CLIENT_ID', // Замінити на свій webClientId з Google Cloud Console
   iosClientId: 'Y799177460164-op1nci6s5aihn0u2n62ttfikcutqktuj.apps.googleusercontent.com',
 });
 
@@ -48,52 +47,26 @@ const SignInScreen = ({ navigation }) => {
       errorMessages.email = 'Invalid email format';
       valid = false;
     }
-
+  
     // Перевірка на наявність пароля
     if (!password) {
       errorMessages.password = 'Password is required';
       valid = false;
     }
-
+  
     if (valid) {
       try {
-        const users = await getUser();
-        const existingUser = users.find(user => user.email === email && user.password === password);
-        if (existingUser) {
-          // Успішна аутентифікація
-          alert('Sign in successful!');
-          navigation.navigate('Main'); // Перехід до основного екрану
-        } else {
-          alert('Invalid email or password');
-        }
+        const user = await authenticateUser(email, password);
+        console.log('User logged in:', user);
+        // Перейти до основного екрану або зберегти токен автентифікації
+        navigation.navigate('Main');
       } catch (error) {
-        console.error('Error handling sign in:', error);
-        alert('An error occurred while signing in.');
+        console.error('Login failed:', error);
+        alert('Invalid email or password');
       }
     } else {
       setErrors(errorMessages);
     }
-
-    //код на валідацію і отримання користувача з БД
-    // if (valid) {
-    //   // Перевірка на існування користувача
-    //   try {
-    //     const user = await getUser(email, password);
-    //     if (user) {
-    //       console.log('User found:', user);
-    //       // Перехід на наступний екран або інша дія після успішного входу
-    //       navigation.navigate('Transactions');
-    //     } else {
-    //       console.log('User not found');
-    //       alert('Invalid email or password');
-    //     }
-    //   } catch (error) {
-    //     console.error('Error signing in:', error);
-    //     alert('Failed to sign in.');
-    //   }
-    // } else {
-    //   setErrors(errorMessages);
-    // }
   };
 
   return (
@@ -119,7 +92,7 @@ const SignInScreen = ({ navigation }) => {
         textContentType="none" // Для iOS
       />
       {errors.password ? <Text style={styles.errorText}>{errors.password}</Text> : null}
-      <TouchableOpacity onPress={() => navigation.navigate('SignIn')}>
+      <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
         <Text style={[styles.link, styles.forgot]}>Forgot password?</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.btn} onPress={handleSignIn}>

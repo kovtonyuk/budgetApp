@@ -4,6 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import SignInScreen from '../screens/SignInScreen';
 import SignUpScreen from '../screens/SignUpScreen';
+import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
 import TransactionsScreen from '../screens/TransactionsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
@@ -18,9 +19,28 @@ const Tab = createBottomTabNavigator();
 const StackNavigator = () => {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="SignUp" component={SignUpScreen} />
+      <Stack.Screen 
+        name="SignUp" 
+        component={SignUpScreen}
+        options={{
+          headerLeft: () => null, // Сховати кнопку зліва на екрані SignIn
+        }} 
+      />
+      <Stack.Screen 
+        name="SignIn" 
+        component={SignInScreen} 
+        options={{
+          headerLeft: () => null, // Сховати кнопку зліва на екрані SignIn
+        }} 
+      />
+      <Stack.Screen 
+        name="ForgotPassword" 
+        component={ForgotPasswordScreen}
+        options={{
+          headerLeft: () => null, // Сховати кнопку зліва на екрані SignIn
+        }} 
+      />
       <Stack.Screen name="Transactions" component={TransactionsScreen} />
-      <Stack.Screen name="SignIn" component={SignInScreen} />
       <Stack.Screen name="EditProfile" component={EditProfileScreen} />
       <Stack.Screen 
         name="Main" 
