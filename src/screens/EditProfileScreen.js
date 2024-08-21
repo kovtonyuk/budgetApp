@@ -35,7 +35,6 @@ const EditProfileScreen = ({ navigation }) => {
     };
     
     await updateUser(updatedUser);
-    console.log(updatedUser);
     navigation.navigate('Profile');
   };
 

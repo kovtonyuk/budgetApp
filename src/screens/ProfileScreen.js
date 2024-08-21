@@ -1,13 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { getUser, getUserId } from '../components/userStore';
 import { useFocusEffect } from '@react-navigation/native';
 
 const ProfileScreen = ({ route, navigation }) => {
-  // Отримання параметрів навігації
-  const { firstName, lastName } = route.params || {};
-
   const [email, setEmail] = useState('');
+  const [firstName, setFirstName] = useState(firstName || '');
+  const [lastName, setLastName] = useState(lastName || '');
 
   useFocusEffect(
     React.useCallback(() => {
@@ -18,6 +17,8 @@ const ProfileScreen = ({ route, navigation }) => {
           const currentUser = users.find(user => user.id === userId);
           if (currentUser) {
             setEmail(currentUser.email);
+            setFirstName(currentUser.firstName || '');
+            setLastName(currentUser.lastName || '');
           }
         }
       };
@@ -58,13 +59,11 @@ const ProfileScreen = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    //justifyContent: 'center',
-    // alignItems: 'center',
     padding: 17,
   },
   avatarContainer: {
     marginBottom: 20,
-    alignItems: 'center', // Центрує аватарку всередині контейнера
+    alignItems: 'center',
   },
   text: {
     fontSize: 14,
@@ -87,9 +86,9 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   avatar: {
-    width: 80, // Збільшено для кращої видимості
-    height: 80, // Збільшено для кращої видимості
-    borderRadius: 40, // Становить коло
+    width: 80,
+    height: 80,
+    borderRadius: 40,
   },
 });
 

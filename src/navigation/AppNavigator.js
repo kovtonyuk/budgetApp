@@ -55,7 +55,7 @@ const TabNavigator = () => {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        tabBarActiveTintColor: 'tomato',
+        tabBarActiveTintColor: '#6D31ED',
         tabBarInactiveTintColor: 'gray',
         tabBarIcon: ({ color, size }) => {
           let iconName;
@@ -63,10 +63,10 @@ const TabNavigator = () => {
             iconName = 'cash-outline';
           } else if (route.name === 'Profile') {
             iconName = 'people-circle-outline';
-          } else if (route.name === 'Category') {
-            iconName = 'copy-outline';
-          } else if (route.name === 'Tag') {
-            iconName = 'pricetag-outline';
+          } else if (route.name === 'Categories') {
+            iconName = 'list-outline';
+          } else if (route.name === 'Tags') {
+            iconName = 'bookmark-outline';
           } else if (route.name === 'Settings') {
             iconName = 'settings-outline';
           }
@@ -74,10 +74,10 @@ const TabNavigator = () => {
         },
       })}
     >
-      <Tab.Screen name="Transactions" component={TransactionsScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="Transactions" component={TransactionsScreen} />      
       <Tab.Screen name="Categories" component={CategoryScreen} />
       <Tab.Screen name="Tags" component={TagScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreen} />
       <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
   );
